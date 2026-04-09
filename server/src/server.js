@@ -8,6 +8,7 @@ import userRoutes from './routes/users.js'
 import blogRoutes from './routes/blogs.js'
 import eventRoutes from './routes/events.js'
 import knowledgeRoutes from './routes/knowledge.js'
+import projectRoutes from './routes/projects.js'
 import { notFound, errorHandler } from './middleware/error.js'
 
 dotenv.config()
@@ -27,6 +28,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/blogs', blogRoutes)
 app.use('/api/events', eventRoutes)
 app.use('/api/knowledge', knowledgeRoutes)
+app.use('/api/projects', projectRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
@@ -43,3 +45,4 @@ connectDb()
     console.error('DB connection failed', error)
     process.exit(1)
   })
+

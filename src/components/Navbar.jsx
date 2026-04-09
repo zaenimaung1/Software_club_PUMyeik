@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore'
 
 const links = [
   { to: '/', label: 'Home', end: true },
+  { to: '/projects', label: 'Projects', end: false },
   { to: '/blogs', label: 'Blogs', end: false },
   { to: '/events', label: 'Events', end: false },
   { to: '/gallery', label: 'Knowledge', end: false },
@@ -107,3 +108,4 @@ export default function SiteNavbar() {
     </header>
   )
 }
+

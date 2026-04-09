@@ -16,6 +16,7 @@ function getInitialTheme() {
 export default function MemberSettings() {
   const { token, user, updateUser } = useAuthStore()
   const fileInputRef = useRef(null)
+  const projectFilesRef = useRef(null)
   const [firstName, setFirstName] = useState(splitName(user?.name).firstName)
   const [lastName, setLastName] = useState(splitName(user?.name).lastName)
   const [email, setEmail] = useState(user?.email ?? '')
@@ -30,6 +31,17 @@ export default function MemberSettings() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [projectTitle, setProjectTitle] = useState('')
+  const [projectDescription, setProjectDescription] = useState('')
+  const [projectImages, setProjectImages] = useState([])
+  const [projectImageNames, setProjectImageNames] = useState([])
+  const [projectItems, setProjectItems] = useState([])
+  const [projectError, setProjectError] = useState('')
+  const [projectSuccess, setProjectSuccess] = useState('')
+  const [projectLoading, setProjectLoading] = useState(false)
+  const [projectListLoading, setProjectListLoading] = useState(false)
+
+  const isMember = user?.role === 'member'
 
   useEffect(() => {
     const parsed = splitName(user?.name)
@@ -48,6 +60,26 @@ export default function MemberSettings() {
     window.localStorage.setItem('theme', theme)
   }, [theme])
 
+  useEffect(() => {
+    if (!token || !isMember) return
+
+    const loadProjects = async () => {
+      setProjectListLoading(true)
+      try {
+        const data = await api('/api/projects/mine', { token })
+        setProjectItems(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setProjectError(
+          err instanceof Error ? err.message : 'Failed to load your projects',
+        )
+      } finally {
+        setProjectListLoading(false)
+      }
+    }
+
+    loadProjects()
+  }, [isMember, token])
+
   const passwordStrength = getPasswordStrength(password)
   const strengthLabel = ['Too weak', 'Weak', 'Good', 'Strong'][passwordStrength]
   const progress = (passwordStrength / 3) * 100
@@ -58,6 +90,19 @@ export default function MemberSettings() {
 
   if (!token || !user) {
     return <Navigate to="/login" replace />
+  }
+
+  const loadMyProjects = async () => {
+    if (!token || !isMember) return
+    setProjectListLoading(true)
+    try {
+      const data = await api('/api/projects/mine', { token })
+      setProjectItems(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setProjectError(err instanceof Error ? err.message : 'Failed to load your projects')
+    } finally {
+      setProjectListLoading(false)
+    }
   }
 
   const handlePhotoChange = async (event) => {
@@ -80,12 +125,45 @@ export default function MemberSettings() {
     }
   }
 
+  const handleProjectImageChange = async (event) => {
+    const files = Array.from(event.target.files ?? [])
+    if (!files.length) return
+
+    setProjectError('')
+    setProjectSuccess('')
+
+    if (files.some((file) => !file.type.startsWith('image/'))) {
+      setProjectError('Please choose image files only for project screenshots')
+      return
+    }
+
+    try {
+      const dataUrls = await Promise.all(files.map((file) => readFileAsDataUrl(file)))
+      setProjectImages(dataUrls)
+      setProjectImageNames(files.map((file) => file.name))
+    } catch {
+      setProjectError('Failed to read one or more project images')
+    }
+  }
+
   const clearPhoto = () => {
     setPhoto('')
     setSuccess('')
     setError('')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
+    }
+  }
+
+  const clearProjectForm = () => {
+    setProjectTitle('')
+    setProjectDescription('')
+    setProjectImages([])
+    setProjectImageNames([])
+    setProjectError('')
+    setProjectSuccess('')
+    if (projectFilesRef.current) {
+      projectFilesRef.current.value = ''
     }
   }
 
@@ -156,8 +234,50 @@ export default function MemberSettings() {
     }
   }
 
+  const handleProjectSubmit = async (event) => {
+    event.preventDefault()
+    setProjectError('')
+    setProjectSuccess('')
+
+    if (!projectTitle.trim() || !projectDescription.trim()) {
+      setProjectError('Project title and description are required')
+      return
+    }
+
+    if (projectImages.length < 3) {
+      setProjectError('Please upload at least 3 project images')
+      return
+    }
+
+    setProjectLoading(true)
+    try {
+      await api('/api/projects', {
+        method: 'POST',
+        token,
+        body: {
+          title: projectTitle.trim(),
+          description: projectDescription.trim(),
+          images: projectImages,
+        },
+      })
+      setProjectTitle('')
+      setProjectDescription('')
+      setProjectImages([])
+      setProjectImageNames([])
+      if (projectFilesRef.current) {
+        projectFilesRef.current.value = ''
+      }
+      setProjectSuccess('Your project was submitted to the admin team for review.')
+      await loadMyProjects()
+    } catch (err) {
+      setProjectError(err instanceof Error ? err.message : 'Failed to submit project')
+    } finally {
+      setProjectLoading(false)
+    }
+  }
+
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 sm:px-6 lg:py-14">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:py-14">
       <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900">
         <form className="flex flex-col" onSubmit={handleSubmit}>
           <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800 sm:px-8">
@@ -419,6 +539,168 @@ export default function MemberSettings() {
           </div>
         </form>
       </Card>
+
+      {isMember ? (
+        <Card className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900">
+          <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800 sm:px-8">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Submit your project</h2>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Share your project with a title, description, and at least 3 images from your device. Admins will review it before publishing.
+            </p>
+          </div>
+
+          <div className="grid gap-8 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+            <form className="space-y-5" onSubmit={handleProjectSubmit}>
+              {projectError ? (
+                <Alert color="failure" role="alert">
+                  <span className="font-medium">{projectError}</span>
+                </Alert>
+              ) : null}
+              {projectSuccess ? (
+                <Alert color="success" role="status">
+                  <span className="font-medium">{projectSuccess}</span>
+                </Alert>
+              ) : null}
+
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="project-title" value="Project Title" />
+                </div>
+                <TextInput
+                  id="project-title"
+                  type="text"
+                  value={projectTitle}
+                  onChange={(event) => setProjectTitle(event.target.value)}
+                  placeholder="Inventory App for Student Labs"
+                  required
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="project-description" value="Description" />
+                </div>
+                <textarea
+                  id="project-description"
+                  rows={6}
+                  value={projectDescription}
+                  onChange={(event) => setProjectDescription(event.target.value)}
+                  placeholder="Explain what the project does, the problem it solves, and what makes it useful."
+                  className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-sm text-gray-900 focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                  required
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="project-images" value="Project Images" />
+                </div>
+                <input
+                  ref={projectFilesRef}
+                  id="project-images"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleProjectImageChange}
+                  className="block w-full rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-600 file:mr-4 file:rounded-xl file:border-0 file:bg-violet-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-violet-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                />
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  Upload at least 3 screenshots or photos from your device.
+                </p>
+                {projectImageNames.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {projectImageNames.map((name) => (
+                      <span
+                        key={name}
+                        className="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Button type="submit" color="purple" disabled={projectLoading}>
+                  {projectLoading ? 'Submitting...' : 'Submit project'}
+                </Button>
+                <button
+                  type="button"
+                  onClick={clearProjectForm}
+                  className="rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  Clear form
+                </button>
+              </div>
+            </form>
+
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/60">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    Your submissions
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Track review status from the admin team.
+                  </p>
+                </div>
+                <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                  {projectItems.length}
+                </span>
+              </div>
+
+              {projectListLoading ? (
+                <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">Loading your submissions...</p>
+              ) : projectItems.length ? (
+                <div className="mt-5 space-y-4">
+                  {projectItems.map((item) => (
+                    <article
+                      key={String(item._id)}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <h4 className="font-semibold text-slate-900 dark:text-white">{item.title}</h4>
+                          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            Submitted {formatDate(item.createdAt)}
+                          </p>
+                        </div>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusTone(item.status)}`}>
+                          {item.status}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        {item.description}
+                      </p>
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        {(item.images ?? []).slice(0, 3).map((image, index) => (
+                          <img
+                            key={`${item._id}-${index}`}
+                            src={image}
+                            alt={`${item.title} ${index + 1}`}
+                            className="h-20 w-full rounded-xl object-cover"
+                          />
+                        ))}
+                      </div>
+                      {item.reviewNote ? (
+                        <div className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          <span className="font-semibold text-slate-900 dark:text-white">Admin note:</span>{' '}
+                          {item.reviewNote}
+                        </div>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">
+                  No project submissions yet. Your next approved project can appear on the public site.
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+      ) : null}
     </main>
   )
 }
@@ -457,3 +739,22 @@ function readFileAsDataUrl(file) {
     reader.readAsDataURL(file)
   })
 }
+
+function formatDate(value) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return date.toLocaleDateString()
+}
+
+function statusTone(status) {
+  if (status === 'approved') {
+    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+  }
+  if (status === 'rejected') {
+    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
+  }
+  return 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+}
+
+

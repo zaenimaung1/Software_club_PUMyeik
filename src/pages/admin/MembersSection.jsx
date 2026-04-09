@@ -1,10 +1,10 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react'
-import { FiEdit2, FiMail, FiPlus, FiTrash2, FiUsers } from 'react-icons/fi'
+import { FiEdit2, FiMail, FiPlus, FiTrash2, FiUsers,  } from 'react-icons/fi'
 import { api } from '../../api/client'
 
 const empty = { name: '', email: '', password: '', gender: '', batch: '' }
 
-export default function MembersSection({ token, onNotify, searchTerm = '' }) {
+export default function MembersSection({ token, onNotify }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState(null)
@@ -36,17 +36,11 @@ export default function MembersSection({ token, onNotify, searchTerm = '' }) {
   }, [items])
 
   const filteredItems = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase()
     return items.filter((item) => {
       const matchesBatch = batchFilter === 'all' || (item.batch || '') === batchFilter
-      const haystack = [item.name, item.email, item.gender, item.batch]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-      const matchesSearch = !term || haystack.includes(term)
-      return matchesBatch && matchesSearch
+      return matchesBatch
     })
-  }, [items, searchTerm, batchFilter])
+  }, [items, batchFilter])
 
   const startCreate = () => {
     setEditingId(null)
@@ -124,15 +118,8 @@ export default function MembersSection({ token, onNotify, searchTerm = '' }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h2 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Membres
-          </h2>
-          <div className="mt-3 flex gap-5 border-b border-slate-200 text-sm dark:border-slate-700">
-            
-          </div>
-        </div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-end">
+        
         <button
           type="button"
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(124,58,237,0.28)] transition hover:from-violet-500 hover:to-purple-500"
@@ -233,12 +220,10 @@ export default function MembersSection({ token, onNotify, searchTerm = '' }) {
 
       <section className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-              <FiUsers className="h-3.5 w-3.5" />
-              {filteredItems.length} Staff du club
-            </p>
-          </div>
+           <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                    <FiUsers className="h-3.5 w-3.5" />
+                    {filteredItems.length} Members
+                  </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
               Filtrer par
@@ -256,7 +241,7 @@ export default function MembersSection({ token, onNotify, searchTerm = '' }) {
               ))}
             </select>
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              {searchTerm ? `Search: ${searchTerm}` : 'Searching all members'}
+              Searching all members
             </div>
           </div>
         </div>

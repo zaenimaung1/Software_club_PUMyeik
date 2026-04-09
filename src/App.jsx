@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Blogs from './pages/Blogs'
 import Events from './pages/Events'
 import Gallery from './pages/Gallery'
+import Projects from './pages/Projects'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Admin from './pages/Admin'
@@ -64,6 +65,7 @@ function App() {
       {!hideChrome && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/projects" element={<Projects />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/events" element={<Events />} />
         <Route path="/gallery" element={<Gallery />} />

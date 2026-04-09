@@ -41,7 +41,7 @@ export default function Events() {
         ) : events.length ? (
           events.map((event) => (
             <article key={event.id} className="event-card">
-              <div className="event-date">{event.date}</div>
+              <div className="event-date ">{event.date}</div>
               <h2>{event.title}</h2>
               <p>{event.description}</p>
               <div className="event-footer">

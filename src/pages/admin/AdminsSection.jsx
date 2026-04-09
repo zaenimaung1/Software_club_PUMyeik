@@ -93,15 +93,8 @@ export default function AdminsSection({ token, onNotify }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h2 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Settings
-          </h2>
-          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-            Manage administrator accounts and access for the club dashboard.
-          </p>
-        </div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-end">
+        
         <button
           type="button"
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(124,58,237,0.28)] transition hover:from-violet-500 hover:to-purple-500"
