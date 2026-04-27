@@ -50,19 +50,19 @@ export default function Login() {
     <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-12 lg:py-16">
       <div className="mx-auto grid w-full max-w-5xl items-stretch gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="flex flex-col justify-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-orange-600 dark:text-orange-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-green-400">
             Authentication
           </span>
-          <h1 className="mt-2 font-serif text-3xl font-semibold text-gray-900 dark:text-white sm:text-4xl">
+          <h1 className="mt-2 font-serif text-3xl font-semibold text-[var(--ink)] sm:text-4xl">
             Welcome back
           </h1>
-          <p className="mt-3 text-base text-gray-600 dark:text-gray-400">
+          <p className="mt-3 text-base text-[var(--ink-soft)]">
             Sign in with your club account. Members go to Settings first, while admins go to Admin.
           </p>
-          <p className="mt-4 text-sm text-gray-500 dark:text-gray-500">
+          <p className="mt-4 text-sm text-[var(--muted)]">
             New here?{' '}
             <NavLink
-              className="font-medium text-cyan-600 hover:underline dark:text-cyan-400"
+              className="font-medium text-indigo-400 hover:underline"
               to="/register"
             >
               Create an account
@@ -70,7 +70,7 @@ export default function Login() {
           </p>
         </div>
 
-        <Card className="w-full max-w-lg justify-self-end shadow-lg">
+        <Card className="w-full max-w-lg justify-self-end border border-[var(--line)] bg-[var(--card)] shadow-lg">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             {error ? (
               <Alert color="failure" role="alert">
@@ -106,24 +106,24 @@ export default function Login() {
               />
             </div>
             <div>
-              <div className="mb-1 flex justify-between text-xs text-gray-500">
+              <div className="mb-1 flex justify-between text-xs text-[var(--muted)]">
                 <span>Password strength</span>
                 <span>{password ? strengthLabel : 'Enter a password'}</span>
               </div>
-              <Progress progress={progress} color="cyan" size="sm" />
-              <p className="mt-1 text-xs text-gray-500">
+              <Progress progress={progress} color="green" size="sm" />
+              <p className="mt-1 text-xs text-[var(--muted)]">
                 Use 8+ characters, uppercase, lowercase, number, and symbol.
               </p>
             </div>
             <Button
               type="submit"
-              color="blue"
+              color="green"
               className="w-full sm:w-auto"
               disabled={loading}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
-            <p className="text-center text-xs text-gray-500 sm:text-left">
+            <p className="text-center text-xs text-[var(--muted)] sm:text-left">
               Run the API on port 5050 and use MongoDB data to manage content.
             </p>
           </form>
@@ -148,4 +148,3 @@ function getPasswordStrength(password) {
   if (score === 4) return 2
   return 3
 }
-

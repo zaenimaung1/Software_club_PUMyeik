@@ -23,7 +23,7 @@ export default function Home() {
     loadApprovedProjects,
   } = useProjectStore()
   const { loadFromApi: loadEvents } = useEventStore()
-  const { loadStats, getAdminCount, getMemberCount } = useUserStore()
+  const { loadStats, getAdminCount, getMemberCount, membersLoading, adminsLoading } = useUserStore()
   const [activeSlide, setActiveSlide] = useState(0)
 
   const slides = [
@@ -45,8 +45,7 @@ export default function Home() {
   ]
 
   const featuredBlog = blogs[0]
-  const secondaryBlogs = blogs.slice(1, 4)
-  const knowledgePosts = blogs.slice(0, 3)
+  const secondaryBlogs = blogs.slice(1, 3)
   const featuredProjects = projects.slice(0, 3)
 
   const truncateText = (text, maxLength = 180) => {
@@ -111,23 +110,18 @@ export default function Home() {
             <NavLink className="button primary" to="/register">
               Join the club
             </NavLink>
-            <NavLink className="button" to="/projects">
-              Explore projects
-            </NavLink>
+           
           </div>
           <div className="hero-metrics">
             <div>
-              <h3>{getMemberCount()}</h3>
-              <p>Active members</p>
+              <h3>{membersLoading ? '...' : getMemberCount()}</h3>
+              <p>Total members</p>
             </div>
             <div>
-              <h3>{getAdminCount()}</h3>
-              <p>Active admins</p>
+              <h3>{adminsLoading ? '...' : getAdminCount()}</h3>
+              <p>Total admins</p>
             </div>
-            <div>
-              <h3>4</h3>
-              <p>Weekly sessions</p>
-            </div>
+            
           </div>
         </div>
         <div className="hero-carousel">
@@ -225,9 +219,8 @@ export default function Home() {
             <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent dark:from-slate-100 dark:via-slate-200 dark:to-slate-100">Approved member projects</h2>
             <p className="mt-3 text-lg text-slate-600 leading-7 dark:text-slate-400">Handpicked projects showcasing real member work—approved for excellence by our admin team.</p>
           </div>
-          <NavLink className="button ghost relative group" to="/projects">
-            <span className="relative z-10 transition-all duration-300 group-hover:-translate-x-1">View all projects</span>
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt" />
+<NavLink className="button ghost" to="/projects">
+            View all blogs
           </NavLink>
         </div>
         
@@ -292,20 +285,7 @@ export default function Home() {
                   <p className="mb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-3">
                     {truncateText(project.description, 120)}
                   </p>
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-500">
-                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      24
-                    </span>
-                    <NavLink 
-                      to={`/projects/${project._id}`}
-                      className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
-                    >
-                      View →
-                    </NavLink>
-                  </div>
+                 
                 </div>
               </article>
             ))}
@@ -328,10 +308,14 @@ export default function Home() {
         )}
       </section>
 
-      <section className="section-block">
+      
+
+  
+
+     <section className="section-block">
         <div className="section-header with-actions">
           <div>
-            <h2>Latest blogs</h2>
+            <h2>Knowledge Sharing</h2>
             <p>Club announcements, meeting notes, and development updates.</p>
           </div>
           <NavLink className="button ghost" to="/blogs">
@@ -363,7 +347,7 @@ export default function Home() {
               <p>{truncateText(featuredBlog.content, 260)}</p>
               <div className="story-meta">
                 <span>{featuredBlog.author}</span>
-                <NavLink className="button ghost" to="/blogs">
+                <NavLink className="button ghost" to="/Knowledge">
                   Read more
                 </NavLink>
               </div>
@@ -383,7 +367,7 @@ export default function Home() {
         )}
       </section>
 
-      <section>
+          <section>
         <div>
           <span className="eyebrow">Mentor spotlight</span>
           <h2>Meet the students leading the club.</h2>
@@ -436,62 +420,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-     <section className="section-block">
-        <div className="section-header with-actions">
-          <div>
-            <h2>Knowledge Sharing</h2>
-            <p>Club announcements, meeting notes, and development updates.</p>
-          </div>
-          <NavLink className="button ghost" to="/blogs">
-            View all blogs
-          </NavLink>
-        </div>
-        {blogsLoading ? (
-          <div className="story-grid" aria-busy="true">
-            <div className="story-feature skeleton-card">
-              <div className="skeleton skeleton-title" />
-              <div className="skeleton skeleton-text" />
-            </div>
-            <div className="story-list">
-              {[0, 1, 2].map((item) => (
-                <div key={item} className="story-item skeleton-card">
-                  <div className="skeleton skeleton-line" />
-                  <div className="skeleton skeleton-text" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : blogsError ? (
-          <p className="muted">{blogsError}</p>
-        ) : featuredBlog ? (
-          <div className="story-grid">
-            <article className="story-feature">
-              <p className="muted">{featuredBlog.createdAt}</p>
-              <h3>{featuredBlog.title}</h3>
-              <p>{truncateText(featuredBlog.content, 260)}</p>
-              <div className="story-meta">
-                <span>{featuredBlog.author}</span>
-                <NavLink className="button ghost" to="/blogs">
-                  Read more
-                </NavLink>
-              </div>
-            </article>
-            <div className="story-list">
-              {secondaryBlogs.map((blog) => (
-                <article key={blog.id} className="story-item">
-                  <p className="muted">{blog.createdAt}</p>
-                  <h4>{blog.title}</h4>
-                  <p>{truncateText(blog.content, 120)}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <p className="muted">No blog updates yet. Check back soon.</p>
-        )}
-      </section>
     </main>
   )
 }
-

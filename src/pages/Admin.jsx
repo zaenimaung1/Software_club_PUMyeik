@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Alert } from 'flowbite-react'
 import {
+  FiArrowLeft,
   FiBell,
   FiBookOpen,
   FiCalendar,
@@ -9,7 +10,6 @@ import {
   FiLayers,
   FiLogOut,
   FiMenu,
-  FiSearch,
   FiSettings,
   FiUsers,
   FiX,
@@ -28,17 +28,26 @@ const SECTIONS = [
   { id: 'events', label: 'Events', icon: FiCalendar },
   { id: 'projects', label: 'Projects', icon: FiLayers },
   { id: 'knowledge', label: 'Knowledge Sharing', icon: FiBookOpen },
+  {id: 'admins', label: 'Admins', icon: FiUsers },
   { id: 'settings', label: 'Settings', icon: FiSettings },
 ]
 
 export default function Admin() {
   const navigate = useNavigate()
-  const { user, token, logout } = useAuthStore()
+  const { user, token, role, logout, updateUser } = useAuthStore()
   const [section, setSection] = useState('dashboard')
   const [banner, setBanner] = useState('')
   const [stats, setStats] = useState(null)
   const [statsLoading, setStatsLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [settingsName, setSettingsName] = useState('')
+  const [settingsEmail, setSettingsEmail] = useState('')
+  const [settingsSaving, setSettingsSaving] = useState(false)
+  const [adminProjectTitle, setAdminProjectTitle] = useState('')
+  const [adminProjectDescription, setAdminProjectDescription] = useState('')
+  const [adminProjectImages, setAdminProjectImages] = useState([])
+  const [adminProjectImageNames, setAdminProjectImageNames] = useState([])
+  const [adminProjectSaving, setAdminProjectSaving] = useState(false)
 
   const onNotify = useCallback((msg) => {
     setBanner(msg)
@@ -46,9 +55,25 @@ export default function Admin() {
 
   const pendingProjects = stats?.pendingProjects ?? 0
   const latestPendingProjects = useMemo(() => stats?.latestPendingProjects ?? [], [stats])
+  const isAdmin = Boolean(token) && role === 'admin'
 
   useEffect(() => {
-    if (section !== 'dashboard' || !token) return
+    setSettingsName(user?.name ?? '')
+    setSettingsEmail(user?.email ?? '')
+  }, [user])
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    if (role !== 'admin') {
+      navigate('/')
+    }
+  }, [navigate, role, token])
+
+  useEffect(() => {
+    if (section !== 'dashboard' || !isAdmin) return
     let cancelled = false
     setStatsLoading(true)
     ;(async () => {
@@ -88,7 +113,7 @@ export default function Admin() {
     return () => {
       cancelled = true
     }
-  }, [section, token])
+  }, [isAdmin, section, token])
 
   useEffect(() => {
     if (!sidebarOpen) return undefined
@@ -116,15 +141,89 @@ export default function Admin() {
     navigate('/login')
   }
 
-  const initial =
-    user?.name?.trim()?.[0]?.toUpperCase() ??
-    user?.email?.[0]?.toUpperCase() ??
-    'A'
-
   const handleSectionChange = (nextSection) => {
     setSection(nextSection)
     setBanner('')
     setSidebarOpen(false)
+  }
+
+  const saveAdminSettings = async (event) => {
+    event.preventDefault()
+    if (!token) return
+    if (!settingsName.trim() || !settingsEmail.trim()) {
+      setBanner('Name and email are required')
+      return
+    }
+    setSettingsSaving(true)
+    try {
+      const data = await api('/api/users/me', {
+        method: 'PATCH',
+        token,
+        body: {
+          name: settingsName.trim(),
+          email: settingsEmail.trim(),
+        },
+      })
+      updateUser(data.user)
+      setBanner('Settings updated successfully')
+    } catch (error) {
+      setBanner(error instanceof Error ? error.message : 'Failed to update settings')
+    } finally {
+      setSettingsSaving(false)
+    }
+  }
+
+  const handleAdminProjectImages = async (event) => {
+    const files = Array.from(event.target.files ?? [])
+    if (!files.length) return
+    if (files.some((file) => !file.type.startsWith('image/'))) {
+      setBanner('Please select image files only')
+      return
+    }
+
+    try {
+      const dataUrls = await Promise.all(files.map((file) => readFileAsDataUrl(file)))
+      setAdminProjectImages(dataUrls)
+      setAdminProjectImageNames(files.map((file) => file.name))
+    } catch {
+      setBanner('Failed to read selected images')
+    }
+  }
+
+  const submitAdminProject = async (event) => {
+    event.preventDefault()
+    if (!token) return
+    if (!adminProjectTitle.trim() || !adminProjectDescription.trim()) {
+      setBanner('Project title and description are required')
+      return
+    }
+    if (adminProjectImages.length < 3) {
+      setBanner('Please upload at least 3 project images')
+      return
+    }
+
+    setAdminProjectSaving(true)
+    try {
+      await api('/api/projects', {
+        method: 'POST',
+        token,
+        body: {
+          title: adminProjectTitle.trim(),
+          description: adminProjectDescription.trim(),
+          images: adminProjectImages,
+        },
+      })
+      setAdminProjectTitle('')
+      setAdminProjectDescription('')
+      setAdminProjectImages([])
+      setAdminProjectImageNames([])
+      setBanner('Project submitted successfully')
+      setSection('projects')
+    } catch (error) {
+      setBanner(error instanceof Error ? error.message : 'Failed to add project')
+    } finally {
+      setAdminProjectSaving(false)
+    }
   }
 
   return (
@@ -157,29 +256,29 @@ export default function Admin() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-lg font-black text-violet-700 shadow-sm">
-              SC
-            </div>
-            <div className="min-w-0">
-              <h2 className="truncate text-xl font-bold">Software Club</h2>
-              <p className="text-sm text-violet-100/80">Admin workspace</p>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/8 px-4 py-6">
+          <div className="rounded-2xl border border-white/15 bg-linear-to-br from-white/20 to-white/5 p-4 backdrop-blur">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-base font-bold text-white">
-                {initial}
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-300 to-orange-400 text-lg font-black text-slate-900 shadow-sm">
+                SC
               </div>
               <div className="min-w-0">
-                <p className="truncate text-base font-semibold text-white">
-                  {user?.name ?? 'Admin'}
-                </p>
-                <p className="truncate text-xs text-violet-100/75">{user?.email}</p>
+                <h2 className="truncate text-xl font-bold tracking-tight">Software Club</h2>
+                <p className="text-sm text-violet-100/80">Admin workspace</p>
               </div>
             </div>
+            <button
+              type="button"
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              onClick={() => {
+                setSidebarOpen(false)
+                navigate('/')
+              }}
+            >
+              <FiArrowLeft className="h-4 w-4" />
+              Back to Main Page
+            </button>
           </div>
+
 
           <nav className="flex flex-col gap-2" aria-label="Admin sections">
             {SECTIONS.map((s) => {
@@ -297,7 +396,7 @@ export default function Admin() {
                 ))}
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
                 <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -336,24 +435,138 @@ export default function Admin() {
                     </p>
                   )}
                 </div>
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Dashboard Settings</h2>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    Manage admin profile and add projects directly.
+                  </p>
+                  <div className="mt-5 space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => handleSectionChange('settings')}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    >
+                      Change Name / Email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSectionChange('settings')}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    >
+                      Add Project
+                    </button>
+                  </div>
+                </div>
               </div>
             </>
           ) : null}
 
-          {section === 'members' && token ? (
+          {section === 'members' && isAdmin ? (
             <MembersSection token={token} onNotify={onNotify} />
           ) : null}
-          {section === 'events' && token ? (
+          {section === 'events' && isAdmin ? (
             <EventsSection token={token} onNotify={onNotify} />
           ) : null}
-          {section === 'projects' && token ? (
+          {section === 'projects' && isAdmin ? (
             <ProjectsSection token={token} onNotify={onNotify} />
           ) : null}
-          {section === 'knowledge' && token ? (
+          {section === 'knowledge' && isAdmin ? (
             <GallerySection token={token} onNotify={onNotify} />
           ) : null}
-          {section === 'settings' && token ? (
+          {section === 'admins' && isAdmin ? (
             <AdminsSection token={token} onNotify={onNotify} />
+          ) : null}
+          {section === 'settings' && isAdmin ? (
+            <section className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Settings</h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Update your admin profile and add projects directly from here.
+              </p>
+              <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={saveAdminSettings}>
+                <label className="grid gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Name
+                  <input
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    value={settingsName}
+                    onChange={(event) => setSettingsName(event.target.value)}
+                    placeholder="Admin name"
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Email
+                  <input
+                    type="email"
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    value={settingsEmail}
+                    onChange={(event) => setSettingsEmail(event.target.value)}
+                    placeholder="admin@example.com"
+                  />
+                </label>
+                <div className="md:col-span-2 flex flex-wrap gap-3">
+                  <button
+                    type="submit"
+                    disabled={settingsSaving}
+                    className="rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    {settingsSaving ? 'Saving...' : 'Save Settings'}
+                  </button>
+                </div>
+              </form>
+
+              <form className="mt-8 grid gap-4 border-t border-slate-200 pt-6 dark:border-slate-700" onSubmit={submitAdminProject}>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Add Project</h3>
+                <label className="grid gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Project Title
+                  <input
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    value={adminProjectTitle}
+                    onChange={(event) => setAdminProjectTitle(event.target.value)}
+                    placeholder="Project title"
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Description
+                  <textarea
+                    rows={4}
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    value={adminProjectDescription}
+                    onChange={(event) => setAdminProjectDescription(event.target.value)}
+                    placeholder="Describe the project..."
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Project Images (minimum 3)
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleAdminProjectImages}
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  />
+                </label>
+                {adminProjectImageNames.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {adminProjectImageNames.map((name) => (
+                      <span
+                        key={name}
+                        className="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <div>
+                  <button
+                    type="submit"
+                    disabled={adminProjectSaving}
+                    className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    {adminProjectSaving ? 'Submitting...' : 'Add Project'}
+                  </button>
+                </div>
+              </form>
+            </section>
           ) : null}
         </section>
       </div>
@@ -367,4 +580,3 @@ function formatDate(value) {
   if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleDateString()
 }
-

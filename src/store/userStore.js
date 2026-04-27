@@ -4,19 +4,18 @@ import { api } from '../api/client'
 export const useUserStore = create((set, get) => ({
   admins: [],
   members: [],
+  totalAdmins: 0,
+  totalMembers: 0,
   adminsLoading: false,
   membersLoading: false,
   
   loadStats: async () => {
     set({ adminsLoading: true, membersLoading: true })
     try {
-      const [adminsRes, membersRes] = await Promise.all([
-        api('/api/users/admins', {}),
-        api('/api/users/members', {})
-      ])
+      const statsRes = await api('/api/users/stats', {})
       set({
-        admins: adminsRes,
-        members: membersRes,
+        totalAdmins: Number(statsRes?.admins) || 0,
+        totalMembers: Number(statsRes?.members) || 0,
         adminsLoading: false,
         membersLoading: false,
       })
@@ -26,6 +25,6 @@ export const useUserStore = create((set, get) => ({
     }
   },
   
-  getMemberCount: () => get().members.length,
-  getAdminCount: () => get().admins.length,
+  getMemberCount: () => get().totalMembers || get().members.length,
+  getAdminCount: () => get().totalAdmins || get().admins.length,
 }))

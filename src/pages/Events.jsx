@@ -19,14 +19,7 @@ export default function Events() {
             builds.
           </p>
         </div>
-        <div className="hero-panel">
-          <h3>What to expect</h3>
-          <ul>
-            <li>Hands-on labs and live coding.</li>
-            <li>Peer review and mentorship.</li>
-            <li>Portfolio-ready demos.</li>
-          </ul>
-        </div>
+        
       </section>
 
       <section className="grid-events">
@@ -45,10 +38,9 @@ export default function Events() {
               <h2>{event.title}</h2>
               <p>{event.description}</p>
               <div className="event-footer">
+                <p className='text-amber-300'>Location :</p>
                 <span>{event.location}</span>
-                <button className="button ghost" type="button">
-                  Add to calendar
-                </button>
+              
               </div>
             </article>
           ))

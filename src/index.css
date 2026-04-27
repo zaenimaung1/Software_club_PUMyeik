@@ -3,24 +3,25 @@
 @plugin "flowbite/plugin";
 
 :root {
-  --bg: #f6f1ea;
-  --bg-alt: #fff6ee;
-  --card: #ffffff;
-  --ink: #1f1a17;
-  --ink-soft: #5a504a;
-  --muted: #7b716b;
-  --line: #e1d7cf;
-  --accent: #ff6b4a;
-  --accent-dark: #d24a2b;
-  --accent-2: #1d9aa0;
-  --shadow: 0 18px 40px rgba(31, 26, 23, 0.12);
+  --bg: #0f172a;
+  --bg-alt: #162033;
+  --card: #1e293b;
+  --ink: #f1f5f9;
+  --ink-soft: #cbd5e1;
+  --muted: #94a3b8;
+  --line: #334155;
+  --accent: #4f46e5;
+  --accent-dark: #4338ca;
+  --accent-2: #22c55e;
+  --text: #f1f5f9;
+  --shadow: 0 18px 40px rgba(2, 6, 23, 0.34);
   --radius-lg: 28px;
   --radius-md: 18px;
   --radius-sm: 12px;
 
   font-family: 'Space Grotesk', system-ui, sans-serif;
   color: var(--ink);
-  background: radial-gradient(circle at top, #fff4e7 0%, var(--bg) 55%);
+  background: radial-gradient(circle at top, #162033 0%, var(--bg) 60%);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -94,7 +95,7 @@ ul {
   text-transform: uppercase;
   letter-spacing: 2px;
   font-size: 12px;
-  color: var(--accent-dark);
+  color: var(--accent-2);
   font-weight: 600;
 }
 
@@ -1551,18 +1552,19 @@ ul {
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --bg: #111416;
-  --bg-alt: #171c1f;
-  --card: #1b2126;
-  --ink: #f2f1ee;
-  --ink-soft: #c7c3bd;
-  --muted: #9b958e;
-  --line: #2b333a;
-  --accent: #ff8c6a;
-  --accent-dark: #ff6b4a;
-  --accent-2: #4cc0c4;
-  --shadow: 0 18px 40px rgba(8, 10, 12, 0.35);
-  background: radial-gradient(circle at top, #1c2328 0%, #111416 60%);
+  --bg: #0f172a;
+  --bg-alt: #162033;
+  --card: #1e293b;
+  --ink: #f1f5f9;
+  --ink-soft: #cbd5e1;
+  --muted: #94a3b8;
+  --line: #334155;
+  --accent: #4f46e5;
+  --accent-dark: #4338ca;
+  --accent-2: #22c55e;
+  --text: #f1f5f9;
+  --shadow: 0 18px 40px rgba(2, 6, 23, 0.34);
+  background: radial-gradient(circle at top, #162033 0%, #0f172a 60%);
 }
 
 [data-theme='dark'] body {

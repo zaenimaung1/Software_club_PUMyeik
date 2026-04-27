@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, Card, Label, Progress, Select, TextInput } from 'flowbite-react'
 import { Navigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -756,5 +756,3 @@ function statusTone(status) {
   }
   return 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
 }
-
-

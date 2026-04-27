@@ -339,7 +339,7 @@ title="View project details"
                     </div>
                     {selectedProject.submitter?.batch && (
                       <span className="px-3 py-1 bg-violet-100 text-xs font-semibold rounded-full text-violet-700 dark:bg-violet-500/20 dark:text-violet-300">
-                        Batch {selectedProject.submitter.batch}
+                        Roll No. {selectedProject.submitter.batch}
                       </span>
                     )}
                   </div>

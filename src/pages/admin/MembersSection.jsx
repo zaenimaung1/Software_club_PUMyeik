@@ -10,7 +10,7 @@ export default function MembersSection({ token, onNotify }) {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(empty)
   const [showForm, setShowForm] = useState(false)
-  const [batchFilter, setBatchFilter] = useState('all')
+  const [rollSearch, setRollSearch] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -28,19 +28,15 @@ export default function MembersSection({ token, onNotify }) {
     load()
   }, [load])
 
-  const batches = useMemo(() => {
-    const values = Array.from(
-      new Set(items.map((item) => item.batch).filter(Boolean))
-    )
-    return values.sort((a, b) => a.localeCompare(b))
-  }, [items])
-
   const filteredItems = useMemo(() => {
+    const query = rollSearch.trim().toUpperCase()
     return items.filter((item) => {
-      const matchesBatch = batchFilter === 'all' || (item.batch || '') === batchFilter
-      return matchesBatch
+      if (!query) return true
+      const name = String(item.name || '').toUpperCase()
+      const rollNumber = String(item.batch || '').toUpperCase()
+      return name.includes(query) || rollNumber.includes(query)
     })
-  }, [items, batchFilter])
+  }, [items, rollSearch])
 
   const startCreate = () => {
     setEditingId(null)
@@ -63,6 +59,10 @@ export default function MembersSection({ token, onNotify }) {
   const save = async (e) => {
     e.preventDefault()
     if (!form.name.trim() || !form.email.trim()) return
+    if (form.batch.trim() && !form.batch.trim().toUpperCase().startsWith('KPTMYK')) {
+      onNotify('Roll number must start with KPTMYK')
+      return
+    }
     try {
       if (editingId) {
         const body = {
@@ -177,14 +177,14 @@ export default function MembersSection({ token, onNotify }) {
             </select>
           </label>
           <label className="grid gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-            Batch
+            Roll Number
             <input
               className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               value={form.batch}
               onChange={(ev) =>
-                setForm((f) => ({ ...f, batch: ev.target.value }))
+                setForm((f) => ({ ...f, batch: ev.target.value.toUpperCase() }))
               }
-              placeholder="Batch 2025"
+              placeholder="KPTMYK001"
             />
           </label>
           <label className="grid gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 lg:col-span-2">
@@ -226,23 +226,16 @@ export default function MembersSection({ token, onNotify }) {
                   </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Filtrer par
+              Search
             </label>
-            <select
-              value={batchFilter}
-              onChange={(event) => setBatchFilter(event.target.value)}
+            <input
+              type="text"
+              value={rollSearch}
+              onChange={(event) => setRollSearch(event.target.value.toUpperCase())}
+              placeholder="Name or Roll Number"
               className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              <option value="all">Batch</option>
-              {batches.map((batch) => (
-                <option key={batch} value={batch}>
-                  {batch}
-                </option>
-              ))}
-            </select>
-            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              Searching all members
-            </div>
+            />
+           
           </div>
         </div>
 
@@ -257,7 +250,7 @@ export default function MembersSection({ token, onNotify }) {
                     <th className="px-5 py-4">#</th>
                     <th className="px-5 py-4">Membre</th>
                     <th className="px-5 py-4">Gender</th>
-                    <th className="px-5 py-4">Batch</th>
+                    <th className="px-5 py-4">Roll Number</th>
                     <th className="px-5 py-4">Adresse e-mail</th>
                     <th className="px-5 py-4 text-right">Actions</th>
                   </tr>

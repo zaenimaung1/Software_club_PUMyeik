@@ -1,5 +1,6 @@
 ﻿import { Router } from 'express'
 import {
+  getUserStats,
   listAdmins,
   createAdmin,
   updateAdmin,
@@ -14,6 +15,7 @@ import { protect, requireRole } from '../middleware/auth.js'
 
 const router = Router()
 
+router.get('/stats', getUserStats)
 router.patch('/me', protect, updateMyProfile)
 
 router.use(protect, requireRole('admin'))

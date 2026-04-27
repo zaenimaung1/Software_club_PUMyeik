@@ -84,11 +84,7 @@ export default function Gallery() {
                   ) : null}
                 </div>
 
-                <div className="journal-entry__footer">
-                  <NavLink className="button ghost" to="/blogs">
-                    Open discussion
-                  </NavLink>
-                </div>
+               
               </article>
             )
           })

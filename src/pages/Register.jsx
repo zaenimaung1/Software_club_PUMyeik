@@ -57,19 +57,19 @@ export default function Register() {
     <main className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-12 lg:py-16">
       <div className="mx-auto grid w-full max-w-5xl items-stretch gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="flex flex-col justify-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-orange-600 dark:text-orange-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-green-400">
             Create account
           </span>
-          <h1 className="mt-2 font-serif text-3xl font-semibold text-gray-900 dark:text-white sm:text-4xl">
+          <h1 className="mt-2 font-serif text-3xl font-semibold text-[var(--ink)] sm:text-4xl">
             Join Software Club
           </h1>
-          <p className="mt-3 text-base text-gray-600 dark:text-gray-400">
+          <p className="mt-3 text-base text-[var(--ink-soft)]">
             Create a member account stored in MongoDB. After signup, you will go to Settings first to complete your profile.
           </p>
-          <p className="mt-4 text-sm text-gray-500">
+          <p className="mt-4 text-sm text-[var(--muted)]">
             Already have an account?{' '}
             <NavLink
-              className="font-medium text-cyan-600 hover:underline dark:text-cyan-400"
+              className="font-medium text-indigo-400 hover:underline"
               to="/login"
             >
               Sign in
@@ -77,7 +77,7 @@ export default function Register() {
           </p>
         </div>
 
-        <Card className="w-full max-w-lg justify-self-end shadow-lg">
+        <Card className="w-full max-w-lg justify-self-end border border-[var(--line)] bg-[var(--card)] shadow-lg">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             {error ? (
               <Alert color="failure" role="alert">
@@ -137,11 +137,11 @@ export default function Register() {
               />
             </div>
             <div>
-              <div className="mb-1 flex justify-between text-xs text-gray-500">
+              <div className="mb-1 flex justify-between text-xs text-[var(--muted)]">
                 <span>Password strength</span>
                 <span>{password ? strengthLabel : 'Enter a password'}</span>
               </div>
-              <Progress progress={progress} color="cyan" size="sm" />
+              <Progress progress={progress} color="green" size="sm" />
             </div>
             {password && confirm && password !== confirm ? (
               <p className="text-sm text-red-600 dark:text-red-400">
@@ -150,7 +150,7 @@ export default function Register() {
             ) : null}
             <Button
               type="submit"
-              color="blue"
+              color="green"
               className="w-full sm:w-auto"
               disabled={loading}
             >

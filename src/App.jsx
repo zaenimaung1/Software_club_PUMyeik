@@ -5,7 +5,6 @@ import Footer from './components/Footer'
 import Home from './pages/Home'
 import Blogs from './pages/Blogs'
 import Events from './pages/Events'
-import Gallery from './pages/Gallery'
 import Projects from './pages/Projects'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -14,6 +13,7 @@ import MemberSettings from './pages/MemberSettings'
 import NotFound from './pages/NotFound'
 import { useAuthStore } from './store/authStore'
 import './App.css'
+import Gallery from './pages/Gallery'
 
 function useAuthHydrated() {
   const [hydrated, setHydrated] = useState(() =>
@@ -61,16 +61,16 @@ function App() {
   const hideChrome = location.pathname.startsWith('/admin')
 
   return (
-    <div className="app-shell flex min-h-screen flex-col bg-stone-50 dark:bg-gray-900">
+    <div className="app-shell flex min-h-screen flex-col bg-[var(--bg)] text-[var(--ink)]">
       {!hideChrome && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/events" element={<Events />} />
-        <Route path="/gallery" element={<Gallery />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path='/knowledge' element={<Gallery />} />
         <Route
           path="/settings"
           element={
@@ -95,4 +95,3 @@ function App() {
 }
 
 export default App
-

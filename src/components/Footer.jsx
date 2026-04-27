@@ -2,83 +2,54 @@ import {
   Footer,
   FooterCopyright,
   FooterDivider,
-} from "flowbite-react";
+} from 'flowbite-react'
 
 export default function SiteFooter() {
   return (
-    <Footer className="mt-auto bg-gray-900 text-gray-300">
+    <Footer className="mt-auto border-t border-[var(--line)] bg-[#111b2f] text-[var(--ink-soft)]">
       <div className="w-full px-6 py-10">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-          
-          {/* Brand */}
           <div>
-            <h2 className="text-xl font-semibold text-white">
-              💻 Software Club
-            </h2>
-            <p className="mt-3 text-sm text-gray-400">
-              Building real-world projects with MERN stack, teamwork, and
-              modern engineering practices.
+            <h2 className="text-xl font-semibold text-[var(--ink)]">Software Club</h2>
+            <p className="mt-3 text-sm text-[var(--muted)]">
+              Building real-world projects with MERN stack, teamwork, and modern engineering
+              practices.
             </p>
           </div>
 
-          {/* Contact */}
           <div>
-            <h3 className="mb-3 text-white font-medium">Contact</h3>
+            <h3 className="mb-3 font-medium text-[var(--ink)]">Contact</h3>
             <ul className="space-y-2 text-sm">
-              <li className="hover:text-white transition">
-                📧 softwareclub@campus.org
-              </li>
-              <li className="hover:text-white transition">
-                📍 Room 4-101, Engineering Hall
-              </li>
+              <li className="transition hover:text-[var(--ink)]">softwareclub@campus.org</li>
+              <li className="transition hover:text-[var(--ink)]">Room 4-101, Engineering Hall</li>
             </ul>
           </div>
 
-          {/* Sessions */}
           <div>
-            <h3 className="mb-3 text-white font-medium">Sessions</h3>
+            <h3 className="mb-3 font-medium text-[var(--ink)]">Sessions</h3>
             <ul className="space-y-2 text-sm">
-              <li className="hover:text-white transition">
-                🗓 Wed — 5:00 PM
-              </li>
-              <li className="hover:text-white transition">
-                🗓 Sat — 10:00 AM
-              </li>
+              <li className="transition hover:text-[var(--ink)]">Wed - 5:00 PM</li>
+              <li className="transition hover:text-[var(--ink)]">Sat - 10:00 AM</li>
             </ul>
           </div>
 
-          {/* Social */}
           <div>
-            <h3 className="mb-3 text-white font-medium">Community</h3>
+            <h3 className="mb-3 font-medium text-[var(--ink)]">Community</h3>
             <ul className="space-y-2 text-sm">
-              <li className="hover:text-white transition cursor-pointer">
-                🔗 GitHub
-              </li>
-              <li className="hover:text-white transition cursor-pointer">
-                💬 Discord
-              </li>
-              <li className="hover:text-white transition cursor-pointer">
-                📢 Telegram
-              </li>
+              <li className="cursor-pointer transition hover:text-[var(--ink)]">GitHub</li>
+              <li className="cursor-pointer transition hover:text-[var(--ink)]">Discord</li>
+              <li className="cursor-pointer transition hover:text-[var(--ink)]">Telegram</li>
             </ul>
           </div>
         </div>
 
-        <FooterDivider className=" border-gray-700" />
+        <FooterDivider className="border-[var(--line)]" />
 
-        {/* Bottom */}
         <div className="flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">
-          <FooterCopyright
-            by="Software Club"
-            year={2026}
-            className="text-gray-400"
-          />
-
-          <p className="text-gray-500">
-            Made with ❤️ using MERN Stack
-          </p>
+          <FooterCopyright by="Software Club" year={2026} className="text-[var(--muted)]" />
+          <p className="text-[var(--muted)]">Made with love using MERN Stack</p>
         </div>
       </div>
     </Footer>
-  );
+  )
 }

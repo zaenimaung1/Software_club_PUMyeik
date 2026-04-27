@@ -1,4 +1,6 @@
-﻿import User from '../models/User.js'
+import User from '../models/User.js'
+
+const ROLL_PREFIX = 'KPTMYK'
 
 function serializeUser(user) {
   return {
@@ -20,15 +22,42 @@ async function ensureUniqueEmail(email, currentUserId) {
   })
 }
 
+function normalizeRollNumber(value) {
+  return String(value ?? '').trim().toUpperCase()
+}
+
+function isValidRollNumber(value) {
+  if (value === undefined || value === null) return true
+  const normalized = normalizeRollNumber(value)
+  if (!normalized) return true
+  return normalized.startsWith(ROLL_PREFIX)
+}
+
 export async function listAdmins(req, res) {
   const admins = await User.find({ role: 'admin' }).select('-password')
   res.json(admins)
+}
+
+export async function getUserStats(req, res) {
+  const [admins, members] = await Promise.all([
+    User.countDocuments({ role: 'admin' }),
+    User.countDocuments({ role: 'member' }),
+  ])
+
+  res.json({
+    admins,
+    members,
+    total: admins + members,
+  })
 }
 
 export async function createAdmin(req, res) {
   const { name, email, password, photo, gender, batch } = req.body
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'Missing fields' })
+  }
+  if (!isValidRollNumber(batch)) {
+    return res.status(400).json({ message: 'Roll number must start with KPTMYK' })
   }
   const exists = await User.findOne({ email: email.toLowerCase() })
   if (exists) {
@@ -40,7 +69,7 @@ export async function createAdmin(req, res) {
     password,
     photo: typeof photo === 'string' ? photo.trim() : '',
     gender: typeof gender === 'string' ? gender.trim() : '',
-    batch: typeof batch === 'string' ? batch.trim() : '',
+    batch: typeof batch === 'string' ? normalizeRollNumber(batch) : '',
     role: 'admin',
   })
   res.status(201).json(serializeUser(admin))
@@ -60,7 +89,12 @@ export async function updateAdmin(req, res) {
   if (password) admin.password = password
   if (typeof photo === 'string') admin.photo = photo.trim()
   if (typeof gender === 'string') admin.gender = gender.trim()
-  if (typeof batch === 'string') admin.batch = batch.trim()
+  if (typeof batch === 'string') {
+    if (!isValidRollNumber(batch)) {
+      return res.status(400).json({ message: 'Roll number must start with KPTMYK' })
+    }
+    admin.batch = normalizeRollNumber(batch)
+  }
   await admin.save()
   res.json(serializeUser(admin))
 }
@@ -82,6 +116,9 @@ export async function createMember(req, res) {
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'Missing fields' })
   }
+  if (!isValidRollNumber(batch)) {
+    return res.status(400).json({ message: 'Roll number must start with KPTMYK' })
+  }
   const exists = await User.findOne({ email: email.toLowerCase() })
   if (exists) {
     return res.status(400).json({ message: 'Email already exists' })
@@ -92,7 +129,7 @@ export async function createMember(req, res) {
     password,
     photo: typeof photo === 'string' ? photo.trim() : '',
     gender: typeof gender === 'string' ? gender.trim() : '',
-    batch: typeof batch === 'string' ? batch.trim() : '',
+    batch: typeof batch === 'string' ? normalizeRollNumber(batch) : '',
     role: 'member',
   })
   res.status(201).json(serializeUser(member))
@@ -112,7 +149,12 @@ export async function updateMember(req, res) {
   if (password) member.password = password
   if (typeof photo === 'string') member.photo = photo.trim()
   if (typeof gender === 'string') member.gender = gender.trim()
-  if (typeof batch === 'string') member.batch = batch.trim()
+  if (typeof batch === 'string') {
+    if (!isValidRollNumber(batch)) {
+      return res.status(400).json({ message: 'Roll number must start with KPTMYK' })
+    }
+    member.batch = normalizeRollNumber(batch)
+  }
   await member.save()
   res.json(serializeUser(member))
 }
@@ -169,7 +211,10 @@ export async function updateMyProfile(req, res) {
   }
 
   if (batch !== undefined) {
-    user.batch = String(batch).trim()
+    if (!isValidRollNumber(batch)) {
+      return res.status(400).json({ message: 'Roll number must start with KPTMYK' })
+    }
+    user.batch = normalizeRollNumber(batch)
   }
 
   await user.save()
